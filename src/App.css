@@ -1,38 +1,133 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+  margin: 0;
+}
+
 .App {
-  text-align: center;
+  display: flex;
+  height: 100vh;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.sidebar {
+  width: 300px;
+  background-color: #f4f4f4;
+  border-right: 1px solid #ddd;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+}
+
+.sidebar h2 {
+  padding: 0 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.sidebar .username-input {
+  padding: 10px 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.sidebar .username-input input {
+  width: 90%;
+  padding: 4px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+}
+
+.sidebar li {
+  padding: 16px;
+  cursor: pointer;
+}
+
+.sidebar li:hover {
+  background-color: #e9e9e9;
+}
+
+.sidebar li.active {
+  background-color: #007bff;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.chat-room {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.chat-room h2 {
+  padding: 16px;
+  margin: 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+}
+
+.message-list {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message {
+  padding: 8px 12px;
+  background-color: #f0f0f0;
+  border-radius: 12px;
+  width: fit-content;
+  max-width: 70%;
+}
+
+.message strong {
+  color: #007bff;
+}
+
+.message small {
+  display: block;
+  font-size: 0.75em;
+  color: #777;
+  margin-top: 4px;
+}
+
+.message-form {
+  display: flex;
+  padding: 16px;
+  border-top: 1px solid #ddd;
+  background-color: #f9f9f9;
+}
+
+.message-form input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1em;
+}
+
+.message-form button {
+  padding: 10px 20px;
+  margin-left: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.message-form button:hover {
+  background-color: #0056b3;
 }
