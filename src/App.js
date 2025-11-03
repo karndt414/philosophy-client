@@ -11,6 +11,8 @@ function App() {
   const [selectedQuestion, setSelectedQuestion] = useState(null); // The one we are chatting in
   const [messages, setMessages] = useState([]); // Messages for the selected question
   const [newMessage, setNewMessage] = useState('');
+  const [newQuestionTitle, setNewQuestionTitle] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
   const messagesEndRef = useRef(null); // To auto-scroll to bottom
 
   // --- Data Fetching Effects ---
@@ -35,19 +37,22 @@ function App() {
     }
   }, [selectedQuestion]); // This code re-runs every time 'selectedQuestion' changes
 
-  // 3. Listen for incoming broadcasts on our "walkie-talkie"
+  // 3. Listen for new messages AND new questions from Socket.io
   useEffect(() => {
-    // When the 'receive_message' event comes in...
     socket.on('receive_message', (message) => {
-      // ...add the new message to our list
       if (message.question_id === selectedQuestion?.id) {
         setMessages((prevMessages) => [...prevMessages, message]);
       }
     });
 
-    // Clean up the listener when the component closes
+    socket.on('new_question', (newQuestion) => {
+      setQuestions((prevQuestions) => [...prevQuestions, newQuestion]);
+    });
+
+    // Cleanup on component unmount
     return () => {
       socket.off('receive_message');
+      socket.off('new_question');
     };
   }, [selectedQuestion]); // Re-run if selectedQuestion changes
 
@@ -58,6 +63,34 @@ function App() {
 
 
   // --- Event Handlers ---
+
+  const handleAddQuestion = async (e) => {
+    e.preventDefault();
+    if (newQuestionTitle.trim() === '' || adminPassword.trim() === '') {
+      alert('Please fill out all admin fields.');
+      return;
+    }
+
+    const response = await fetch('http://localhost:3001/api/questions/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: newQuestionTitle,
+        password: adminPassword,
+      }),
+    });
+
+    if (response.ok) {
+      // Success! The 'new_question' socket event will update the list.
+      setNewQuestionTitle('');
+      setAdminPassword('');
+    } else {
+      // Failed (probably wrong password)
+      alert('Error: Wrong password or server error.');
+    }
+  };
 
   // This runs when we click the "Send" button
   const handleSendMessage = (e) => {
@@ -89,6 +122,26 @@ function App() {
             onChange={(e) => setUsername(e.target.value)}
           />
         </div>
+
+        {/* --- ADD THIS NEW ADMIN FORM --- */}
+        <form className="admin-form" onSubmit={handleAddQuestion}>
+          <h3>Add Question (Admin)</h3>
+          <input
+            type="text"
+            placeholder="New question title"
+            value={newQuestionTitle}
+            onChange={(e) => setNewQuestionTitle(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Admin password"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+          />
+          <button type="submit">Add</button>
+        </form>
+        {/* --- END OF NEW FORM --- */}
+
         <ul>
           {questions.map((q) => (
             <li

@@ -131,3 +131,36 @@ body {
 .message-form button:hover {
   background-color: #0056b3;
 }
+
+.admin-form {
+  padding: 10px 16px;
+  border-bottom: 1px solid #ddd;
+  background: #eee;
+}
+
+.admin-form h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.admin-form input {
+  width: 90%;
+  padding: 6px;
+  margin-bottom: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.admin-form button {
+  width: 100%;
+  padding: 8px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.admin-form button:hover {
+  background-color: #218838;
+}
