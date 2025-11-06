@@ -216,22 +216,24 @@ function App() {
             onChange={(e) => setUsername(e.target.value)}
           />
         </div>
-        <form className="admin-form" onSubmit={handleAddQuestion}>
-          <h3>Add Question (Admin)</h3>
-          <input
-            type="text"
-            placeholder="New question title"
-            value={newQuestionTitle}
-            onChange={(e) => setNewQuestionTitle(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Admin password"
-            value={adminPassword}
-            onChange={(e) => setAdminPassword(e.target.value)}
-          />
-          <button type="submit">Add</button>
-        </form>
+        <details className="admin-details">
+          <summary>Add Question</summary>
+          <form className="admin-form" onSubmit={handleAddQuestion}>
+            <input
+              type="text"
+              placeholder="New question title"
+              value={newQuestionTitle}
+              onChange={(e) => setNewQuestionTitle(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Admin password"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+            />
+            <button type="submit">Add</button>
+          </form>
+        </details>
         <ul>
           {questions.map((q) => (
             <li
