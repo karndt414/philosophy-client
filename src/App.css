@@ -445,8 +445,7 @@ h3 {
   }
 
   .admin-details {
-    margin-top: 16px;
-    margin-bottom: 16px;
+    display: none
   }
 
   .chat-room {
