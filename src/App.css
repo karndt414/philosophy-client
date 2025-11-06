@@ -207,6 +207,7 @@ h3 {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .admin-details summary {
@@ -291,4 +292,67 @@ h3 {
 .sidebar li.active:hover .delete-btn {
   color: white;
   background: #ff4d4d;
+}
+
+/* --- Login Screen --- */
+
+.login-container {
+  display: grid;
+  place-items: center;
+  width: 100vw;
+  height: 100vh;
+  background: #f4f7f6;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 400px;
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.login-box h2 {
+  color: #5D3BEE;
+  margin-bottom: 12px;
+}
+
+.login-box p {
+  margin-bottom: 24px;
+  color: #555;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  /* Square shape */
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+.login-box input:focus {
+  outline: none;
+  border-color: #5D3BEE;
+  box-shadow: 0 0 0 3px rgba(93, 59, 238, 0.2);
+}
+
+.login-box button {
+  width: 100%;
+  padding: 14px 24px;
+  background-color: #5D3BEE;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.login-box button:hover {
+  background-color: #4a2fbc;
 }

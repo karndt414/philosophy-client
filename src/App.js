@@ -4,7 +4,9 @@ import { supabase } from './supabaseClient'; // Import your client
 import './App.css';
 
 function App() {
-  const [username, setUsername] = useState('Anonymous');
+  const [username, setUsername] = useState(''); // <-- Will be set on login
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // <-- Our new "gate"
+  const [nameInput, setNameInput] = useState(''); // <-- For the login form input
   const [questions, setQuestions] = useState([]);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -116,6 +118,16 @@ function App() {
 
   // --- Event Handlers ---
 
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (nameInput.trim() === '') {
+      alert('Please enter a name!');
+      return;
+    }
+    setUsername(nameInput.trim());
+    setIsLoggedIn(true);
+  };
+
   const handleAddQuestion = async (e) => {
     e.preventDefault();
     if (newQuestionTitle.trim() === '' || adminPassword.trim() === '') {
@@ -204,18 +216,28 @@ function App() {
   // --- Render ---
   // (This JSX is almost identical to your old file, so I'm
   // including it for completeness. I just removed the admin form for now.)
+  if (!isLoggedIn) {
+    return (
+      <div className="login-container">
+        <form className="login-box" onSubmit={handleLogin}>
+          <h2>Welcome to TigerTalks</h2>
+          <p>Please enter your name to join the discussion</p>
+          <input
+            type="text"
+            placeholder="Your Name"
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+          />
+          <button type="submit">Join Chat</button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
       <div className="sidebar">
         <h2>Tiger Talks</h2>
-        <div className="username-input">
-          <label>Your Name: </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </div>
         <details className="admin-details">
           <summary>Add Question</summary>
           <form className="admin-form" onSubmit={handleAddQuestion}>
