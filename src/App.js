@@ -331,6 +331,14 @@ function App() {
     <div className="App">
       <div className="sidebar">
         <h2>Tiger Talks</h2>
+        <div className="user-info">
+          <span>
+            Signed in as: <strong>{session.user.user_metadata.username}</strong>
+          </span>
+          <button onClick={handleSignOut} className="sign-out-btn">
+            Sign Out
+          </button>
+        </div>
         <details className="admin-details">
           <summary>Add Question</summary>
           <form className="admin-form" onSubmit={handleAddQuestion}>
