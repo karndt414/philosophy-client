@@ -4,10 +4,14 @@ import { supabase } from './supabaseClient'; // Import your client
 import './App.css';
 
 function App() {
-  const [username, setUsername] = useState(''); // <-- Will be set from email
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // <-- Our "gate"
-  const [emailInput, setEmailInput] = useState(''); // <-- Renamed
-  const [passwordInput, setPasswordInput] = useState(''); // <-- ADD THIS
+  // This session object is our new "source of truth"
+  const [session, setSession] = useState(null);
+
+  // Form states
+  const [isSignUp, setIsSignUp] = useState(false); // To toggle between Sign In/Sign Up
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [usernameInput, setUsernameInput] = useState(''); // For their chosen username
   const [questions, setQuestions] = useState([]);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -112,6 +116,26 @@ function App() {
     };
   }, []); // Run this only once when the app loads
 
+  // 5. MASTER AUTH HOOK
+  useEffect(() => {
+    // Check if a user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    // Listen for auth events (Sign In, Sign Out, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+
+    // Cleanup
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   // Auto-scroll to the latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -119,26 +143,45 @@ function App() {
 
   // --- Event Handlers ---
 
-  const handleLogin = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
-
-    // 1. Check for empty fields
-    if (emailInput.trim() === '' || passwordInput.trim() === '') {
-      alert('Please enter both email and password.');
+    if (!emailInput || !passwordInput || !usernameInput) {
+      alert("Please fill out all fields.");
       return;
     }
 
-    // 2. NEW: Validate the email
-    if (!emailInput.toLowerCase().endsWith('@bentonvillek12.org')) {
-      alert('Please use a valid @bentonvillek12.org email address.');
-      return;
-    }
+    const { data, error } = await supabase.auth.signUp({
+      email: emailInput,
+      password: passwordInput,
+      options: {
+        data: {
+          // This is how we save their chosen username
+          username: usernameInput,
+        },
+      },
+    });
 
-    // 3. Set the username from the email
-    // (e.g., "john.doe@bentonvillek12.org" becomes "john.doe")
-    const nameFromEmail = emailInput.split('@')[0];
-    setUsername(nameFromEmail);
-    setIsLoggedIn(true);
+    if (error) {
+      alert(error.message);
+    } else if (data.user) {
+      alert("Sign up successful! You are now logged in.");
+    }
+  };
+
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    const { error } = await supabase.auth.signInWithPassword({
+      email: emailInput,
+      password: passwordInput,
+    });
+
+    if (error) {
+      alert(error.message);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
   };
 
   const handleAddQuestion = async (e) => {
@@ -214,10 +257,13 @@ function App() {
     e.preventDefault();
     if (newMessage.trim() === '' || !selectedQuestion) return;
 
+    // NEW: Get username from the secure session
+    const currentUsername = session.user.user_metadata.username || session.user.email;
+
     // Send the new message to the Supabase database
     const { error } = await supabase.from('messages').insert({
       question_id: selectedQuestion.id,
-      username: username,
+      username: currentUsername, // <-- NEW SECURE WAY
       content: newMessage,
     });
 
@@ -229,22 +275,33 @@ function App() {
   // --- Render ---
   // (This JSX is almost identical to your old file, so I'm
   // including it for completeness. I just removed the admin form for now.)
-  if (!isLoggedIn) {
+  if (!session) {
     return (
       <div className="login-container">
-        <form className="login-box" onSubmit={handleLogin}>
-          <h2>Welcome to TigerTalks</h2>
-          <p>Sign in with your @bentonvillek12.org account</p> {/* <-- Text updated */}
+        <form className="login-box" onSubmit={isSignUp ? handleSignUp : handleSignIn}>
+          <h2>{isSignUp ? 'Create Account' : 'Welcome to TigerTalks'}</h2>
+          <p>
+            {isSignUp
+              ? 'Sign up with your @bentonvillek12.org account'
+              : 'Sign in with your @bentonvillek12.org account'}
+          </p>
 
-          {/* --- Updated Email Input --- */}
+          {/* This field ONLY shows on Sign Up */}
+          {isSignUp && (
+            <input
+              type="text"
+              placeholder="Choose a Username"
+              value={usernameInput}
+              onChange={(e) => setUsernameInput(e.target.value)}
+            />
+          )}
+
           <input
             type="email"
             placeholder="School Email"
             value={emailInput}
             onChange={(e) => setEmailInput(e.target.value)}
           />
-
-          {/* --- New Password Input --- */}
           <input
             type="password"
             placeholder="Password"
@@ -252,7 +309,19 @@ function App() {
             onChange={(e) => setPasswordInput(e.target.value)}
           />
 
-          <button type="submit">Login</button>
+          <button type="submit" className="login-button">
+            {isSignUp ? 'Sign Up' : 'Login'}
+          </button>
+
+          <button
+            type="button"
+            className="toggle-button"
+            onClick={() => setIsSignUp(!isSignUp)}
+          >
+            {isSignUp
+              ? 'Already have an account? Sign In'
+              : "Don't have an account? Sign Up"}
+          </button>
         </form>
       </div>
     );
