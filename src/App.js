@@ -148,7 +148,7 @@ function App() {
   return (
     <div className="App">
       <div className="sidebar">
-        <h2>Philosophy Questions</h2>
+        <h2>Tiger Talks</h2>
         <div className="username-input">
           <label>Your Name: </label>
           <input
