@@ -44,20 +44,28 @@ function App() {
   useEffect(() => {
     if (!selectedQuestion) return;
 
-    // Subscribe to new messages on the 'messages' table
     const channel = supabase
-      .channel(`question_room_${selectedQuestion.id}`) // A unique channel for this room
+      .channel(`question_room_${selectedQuestion.id}`)
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*', // <-- CHANGE 'INSERT' TO '*'
           schema: 'public',
           table: 'messages',
-          filter: `question_id=eq.${selectedQuestion.id}`, // Only get messages for this question
+          filter: `question_id=eq.${selectedQuestion.id}`,
         },
         (payload) => {
-          // A new message has arrived!
-          setMessages((prevMessages) => [...prevMessages, payload.new]);
+          if (payload.eventType === 'INSERT') {
+            // A new message has arrived!
+            setMessages((prevMessages) => [...prevMessages, payload.new]);
+          }
+          if (payload.eventType === 'DELETE') {
+            // A message was deleted!
+            // payload.old.id will give us the ID of the deleted message
+            setMessages((prevMessages) =>
+              prevMessages.filter((msg) => msg.id !== payload.old.id)
+            );
+          }
         }
       )
       .subscribe();
@@ -76,13 +84,21 @@ function App() {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*', // <-- CHANGE 'INSERT' TO '*'
           schema: 'public',
           table: 'questions',
         },
         (payload) => {
-          // Add the new question to our list
-          setQuestions((prevQuestions) => [...prevQuestions, payload.new]);
+          if (payload.eventType === 'INSERT') {
+            // Add the new question to our list
+            setQuestions((prevQuestions) => [...prevQuestions, payload.new]);
+          }
+          if (payload.eventType === 'DELETE') {
+            // A question was deleted!
+            setQuestions((prevQuestions) =>
+              prevQuestions.filter((q) => q.id !== payload.old.id)
+            );
+          }
         }
       )
       .subscribe();
@@ -123,6 +139,49 @@ function App() {
       console.log('New question added:', data);
       setNewQuestionTitle('');
       setAdminPassword('');
+    }
+  };
+
+  const handleDeleteQuestion = async (questionId) => {
+    const password = prompt("Enter admin password to delete this question:");
+    if (!password) return; // User clicked cancel
+
+    const { error } = await supabase.functions.invoke('delete-question', {
+      body: {
+        question_id: questionId,
+        password: password,
+      },
+    });
+
+    if (error) {
+      alert(`Error: ${error.message}`);
+    } else {
+      // The Realtime listener will handle the UI update!
+      alert('Question deleted.');
+      // If we deleted the *selected* question, un-select it
+      if (selectedQuestion?.id === questionId) {
+        setSelectedQuestion(null);
+      }
+    }
+  };
+
+  // ADD THIS FUNCTION
+  const handleDeleteMessage = async (messageId) => {
+    const password = prompt("Enter admin password to delete this message:");
+    if (!password) return; // User clicked cancel
+
+    const { error } = await supabase.functions.invoke('delete-message', {
+      body: {
+        message_id: messageId,
+        password: password,
+      },
+    });
+
+    if (error) {
+      alert(`Error: ${error.message}`);
+    } else {
+      // The Realtime listener will handle the UI update!
+      alert('Message deleted.');
     }
   };
 
@@ -181,6 +240,15 @@ function App() {
               onClick={() => setSelectedQuestion(q)}
             >
               {q.title}
+              <button
+                className="delete-btn"
+                onClick={(e) => {
+                  e.stopPropagation(); // Stop it from selecting the question
+                  handleDeleteQuestion(q.id);
+                }}
+              >
+                &times;
+              </button>
             </li>
           ))}
         </ul>
@@ -196,6 +264,12 @@ function App() {
                   <strong>{msg.username}: </strong>
                   <span>{msg.content}</span>
                   <small>{new Date(msg.created_at).toLocaleTimeString()}</small>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDeleteMessage(msg.id)}
+                  >
+                    &times;
+                  </button>
                 </div>
               ))}
               <div ref={messagesEndRef} />

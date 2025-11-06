@@ -164,3 +164,39 @@ body {
 .admin-form button:hover {
   background-color: #218838;
 }
+
+/* Make room for the delete button */
+.sidebar li,
+.message {
+  position: relative;
+}
+
+.delete-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  line-height: 18px;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0;
+  /* Hide by default */
+  transition: opacity 0.2s;
+}
+
+/* Show delete button on hover */
+.sidebar li:hover .delete-btn,
+.message:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  background: #cc0000;
+}
