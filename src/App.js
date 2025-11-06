@@ -4,9 +4,10 @@ import { supabase } from './supabaseClient'; // Import your client
 import './App.css';
 
 function App() {
-  const [username, setUsername] = useState(''); // <-- Will be set on login
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // <-- Our new "gate"
-  const [nameInput, setNameInput] = useState(''); // <-- For the login form input
+  const [username, setUsername] = useState(''); // <-- Will be set from email
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // <-- Our "gate"
+  const [emailInput, setEmailInput] = useState(''); // <-- Renamed
+  const [passwordInput, setPasswordInput] = useState(''); // <-- ADD THIS
   const [questions, setQuestions] = useState([]);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -120,11 +121,23 @@ function App() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (nameInput.trim() === '') {
-      alert('Please enter a name!');
+
+    // 1. Check for empty fields
+    if (emailInput.trim() === '' || passwordInput.trim() === '') {
+      alert('Please enter both email and password.');
       return;
     }
-    setUsername(nameInput.trim());
+
+    // 2. NEW: Validate the email
+    if (!emailInput.toLowerCase().endsWith('@bentonvillek12.org')) {
+      alert('Please use a valid @bentonvillek12.org email address.');
+      return;
+    }
+
+    // 3. Set the username from the email
+    // (e.g., "john.doe@bentonvillek12.org" becomes "john.doe")
+    const nameFromEmail = emailInput.split('@')[0];
+    setUsername(nameFromEmail);
     setIsLoggedIn(true);
   };
 
@@ -221,14 +234,25 @@ function App() {
       <div className="login-container">
         <form className="login-box" onSubmit={handleLogin}>
           <h2>Welcome to TigerTalks</h2>
-          <p>Please enter your name to join the discussion</p>
+          <p>Sign in with your @bentonvillek12.org account</p> {/* <-- Text updated */}
+
+          {/* --- Updated Email Input --- */}
           <input
-            type="text"
-            placeholder="Your Name"
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
+            type="email"
+            placeholder="School Email"
+            value={emailInput}
+            onChange={(e) => setEmailInput(e.target.value)}
           />
-          <button type="submit">Join Chat</button>
+
+          {/* --- New Password Input --- */}
+          <input
+            type="password"
+            placeholder="Password"
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+          />
+
+          <button type="submit">Login</button>
         </form>
       </div>
     );
