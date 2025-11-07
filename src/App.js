@@ -178,7 +178,7 @@ function App() {
 
   const handleVote = async (messageId, voteType) => {
     // Call the NEW SQL function
-    const { error } = await supabase.rpc('cast_vote_once', {
+    const { error } = await supabase.rpc('handle_vote_toggle', {
       message_id_in: messageId,
       vote_type: voteType,
     });
