@@ -250,12 +250,7 @@ function App() {
 
     if (error) {
       alert(`Error: ${error.message}`);
-    } else {
-      alert('Question deleted.');
-      if (selectedQuestion?.id === questionId) {
-        setSelectedQuestion(null);
-      }
-    }
+    } 
   };
 
   const handleDeleteMessage = async (messageId) => {
@@ -273,9 +268,7 @@ function App() {
 
     if (error) {
       alert(`Error: ${error.message}`);
-    } else {
-      alert('Message deleted.');
-    }
+    } 
   };
 
   const handleSendMessage = async (e) => {
@@ -290,6 +283,7 @@ function App() {
       question_id: selectedQuestion.id,
       username: currentUsername, // <-- NEW SECURE WAY
       content: newMessage,
+      is_admin: isAdmin,
     });
 
     if (error) console.error('Error sending message:', error);
@@ -409,7 +403,9 @@ function App() {
             <div className="message-list">
               {messages.map((msg) => (
                 <div key={msg.id} className="message">
-                  <strong>{msg.username}: </strong>
+                  <strong className={msg.is_admin ? 'admin-username' : ''}>
+                    {msg.username}:
+                  </strong>
                   <span>{msg.content}</span>
                   <small>{new Date(msg.created_at).toLocaleTimeString()}</small>
                   {isAdmin && (

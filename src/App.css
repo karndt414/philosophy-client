@@ -250,6 +250,14 @@ h3 {
   background-color: #218838;
 }
 
+/* --- Admin Username Glow --- */
+.admin-username {
+  color: #5D3BEE;
+  /* Use the main purple theme color */
+  /* This creates the "glow" effect */
+  text-shadow: 0 0 8px rgba(93, 59, 238, 0.7);
+}
+
 /* --- Delete Buttons (Hidden by default) --- */
 .delete-btn {
   position: absolute;
