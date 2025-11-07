@@ -498,3 +498,47 @@ h3 {
     box-shadow: none;
   }
 }
+
+/* --- Vote Styles --- */
+.message {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.message-content {
+  flex: 1;
+}
+
+.vote-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 16px;
+  margin-right: 40px;
+  /* Make room for delete button */
+  background: #f4f7f6;
+  border-radius: 20px;
+  padding: 4px 0;
+}
+
+.vote-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 1.1rem;
+  padding: 2px 8px;
+  transition: color 0.2s;
+}
+
+.vote-btn:hover {
+  color: #5D3BEE;
+}
+
+.vote-count {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+  padding: 0 4px;
+}
