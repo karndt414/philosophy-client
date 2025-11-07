@@ -542,3 +542,15 @@ h3 {
   color: #333;
   padding: 0 4px;
 }
+
+/* --- Vote Styles --- */
+
+.vote-btn.voted-up {
+  color: #5D3BEE;
+  /* Highlight color for upvote */
+}
+
+.vote-btn.voted-down {
+  color: #ff4d4d;
+  /* Highlight color for downvote */
+}

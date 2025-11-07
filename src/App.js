@@ -435,13 +435,21 @@ function App() {
 
                   {/* --- ADD THIS NEW VOTE CONTAINER --- */}
                   <div className="vote-container">
-                    <button className="vote-btn" onClick={() => handleVote(msg.id, 'up')}>
+                    <button
+                      className={`vote-btn ${(msg.upvoted_by || []).includes(session.user.id) ? 'voted-up' : ''
+                        }`}
+                      onClick={() => handleVote(msg.id, 'up')}
+                    >
                       ▲
                     </button>
                     <span className="vote-count">
                       {(msg.upvotes || 0) - (msg.downvotes || 0)}
                     </span>
-                    <button className="vote-btn" onClick={() => handleVote(msg.id, 'down')}>
+                    <button
+                      className={`vote-btn ${(msg.downvoted_by || []).includes(session.user.id) ? 'voted-down' : ''
+                        }`}
+                      onClick={() => handleVote(msg.id, 'down')}
+                    >
                       ▼
                     </button>
                   </div>
