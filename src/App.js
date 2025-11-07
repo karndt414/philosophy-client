@@ -17,7 +17,6 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [newQuestionTitle, setNewQuestionTitle] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
   const messagesEndRef = useRef(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -211,69 +210,70 @@ function App() {
 
   const handleAddQuestion = async (e) => {
     e.preventDefault();
-    if (newQuestionTitle.trim() === '' || adminPassword.trim() === '') {
-      alert('Please fill out all admin fields.');
+    if (newQuestionTitle.trim() === '') {
+      alert('Please fill out the question title.');
       return;
     }
 
-    // This calls your 'add-question' Edge Function
-    const { data, error } = await supabase.functions.invoke('RealTime', {
+    // NEW: Add confirmation
+    if (!window.confirm('Are you sure you want to add this question?')) {
+      return;
+    }
+
+    // NEW: No password in the body
+    const { data, error } = await supabase.functions.invoke('add-question', {
       body: {
         title: newQuestionTitle,
-        password: adminPassword,
       },
     });
 
     if (error) {
       alert(`Error: ${error.message}`);
     } else {
-      // Success! The Realtime listener (step 2) will
-      // automatically add the question to the list.
       console.log('New question added:', data);
       setNewQuestionTitle('');
-      setAdminPassword('');
     }
   };
 
   const handleDeleteQuestion = async (questionId) => {
-    const password = prompt("Enter admin password to delete this question:");
-    if (!password) return; // User clicked cancel
+    // NEW: Add confirmation
+    if (!window.confirm('Are you sure you want to delete this question and all its messages?')) {
+      return;
+    }
 
+    // NEW: No password in the body
     const { error } = await supabase.functions.invoke('delete-question', {
       body: {
         question_id: questionId,
-        password: password,
       },
     });
 
     if (error) {
       alert(`Error: ${error.message}`);
     } else {
-      // The Realtime listener will handle the UI update!
       alert('Question deleted.');
-      // If we deleted the *selected* question, un-select it
       if (selectedQuestion?.id === questionId) {
         setSelectedQuestion(null);
       }
     }
   };
 
-  // ADD THIS FUNCTION
   const handleDeleteMessage = async (messageId) => {
-    const password = prompt("Enter admin password to delete this message:");
-    if (!password) return; // User clicked cancel
+    // NEW: Add confirmation
+    if (!window.confirm('Are you sure you want to delete this message?')) {
+      return;
+    }
 
+    // NEW: No password in the body
     const { error } = await supabase.functions.invoke('delete-message', {
       body: {
         message_id: messageId,
-        password: password,
       },
     });
 
     if (error) {
       alert(`Error: ${error.message}`);
     } else {
-      // The Realtime listener will handle the UI update!
       alert('Message deleted.');
     }
   };
@@ -283,7 +283,7 @@ function App() {
     if (newMessage.trim() === '' || !selectedQuestion) return;
 
     // NEW: Get username from the secure session
-    const currentUsername = session.user.user_metadata.username || session.user.email;
+    const currentUsername = session.user.user_metadata.username;
 
     // Send the new message to the Supabase database
     const { error } = await supabase.from('messages').insert({
@@ -366,19 +366,13 @@ function App() {
         </div>
         {isAdmin && (
           <details className="admin-details">
-            <summary>Add Question (Admin)</summary>
+            <summary>Add Question</summary>
               <form className="admin-form" onSubmit={handleAddQuestion}>
                 <input
                   type="text"
                   placeholder="New question title"
                   value={newQuestionTitle}
                   onChange={(e) => setNewQuestionTitle(e.target.value)}
-                />
-                <input
-                  type="password"
-                  placeholder="Admin password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
                 />
                 <button type="submit">Add</button>
               </form>
