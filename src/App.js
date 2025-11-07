@@ -221,7 +221,7 @@ function App() {
     }
 
     // NEW: No password in the body
-    const { data, error } = await supabase.functions.invoke('add-question', {
+    const { data, error } = await supabase.functions.invoke('RealTime', {
       body: {
         title: newQuestionTitle,
       },
