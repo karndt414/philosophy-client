@@ -56,21 +56,30 @@ function App() {
       .on(
         'postgres_changes',
         {
-          event: '*', // <-- CHANGE 'INSERT' TO '*'
+          event: '*', // 👈 1. MAKE SURE THIS IS '*' (not 'INSERT')
           schema: 'public',
           table: 'messages',
           filter: `question_id=eq.${selectedQuestion.id}`,
         },
         (payload) => {
+
+          // This part adds new messages
           if (payload.eventType === 'INSERT') {
-            // A new message has arrived!
             setMessages((prevMessages) => [...prevMessages, payload.new]);
           }
+
           if (payload.eventType === 'DELETE') {
-            // A message was deleted!
-            // payload.old.id will give us the ID of the deleted message
+            // This filters out the deleted message from your list
             setMessages((prevMessages) =>
               prevMessages.filter((msg) => msg.id !== payload.old.id)
+            );
+          }
+
+          if (payload.eventType === 'UPDATE') {
+            setMessages((prevMessages) =>
+              prevMessages.map((msg) =>
+                msg.id === payload.new.id ? payload.new : msg
+              )
             );
           }
         }
@@ -82,7 +91,7 @@ function App() {
       supabase.removeChannel(channel);
     };
 
-  }, [selectedQuestion]);
+  }, [selectedQuestion]); // This part stays the same
 
   // 4. Listen for REAL-TIME new questions (ADD THIS)
   useEffect(() => {
@@ -166,6 +175,19 @@ function App() {
   }, [messages]);
 
   // --- Event Handlers ---
+
+  const handleVote = async (messageId, voteType) => {
+    // Call the SQL function we created!
+    const { error } = await supabase.rpc('increment_vote', {
+      message_id_in: messageId,
+      vote_type_in: voteType,
+    });
+
+    if (error) {
+      console.error('Error voting:', error);
+    }
+    // The Realtime listener will handle the UI update!
+  };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -403,11 +425,28 @@ function App() {
             <div className="message-list">
               {messages.map((msg) => (
                 <div key={msg.id} className="message">
-                  <strong className={msg.is_admin ? 'admin-username' : ''}>
-                    {msg.username}:
-                  </strong>
-                  <span>{msg.content}</span>
-                  <small>{new Date(msg.created_at).toLocaleTimeString()}</small>
+                  <div className="message-content">
+                    <strong className={msg.is_admin ? 'admin-username' : ''}>
+                      {msg.username}:
+                    </strong>
+                    <span>{msg.content}</span>
+                    <small>{new Date(msg.created_at).toLocaleTimeString()}</small>
+                  </div>
+
+                  {/* --- ADD THIS NEW VOTE CONTAINER --- */}
+                  <div className="vote-container">
+                    <button className="vote-btn" onClick={() => handleVote(msg.id, 'up')}>
+                      ▲
+                    </button>
+                    <span className="vote-count">
+                      {(msg.upvotes || 0) - (msg.downvotes || 0)}
+                    </span>
+                    <button className="vote-btn" onClick={() => handleVote(msg.id, 'down')}>
+                      ▼
+                    </button>
+                  </div>
+                  {/* --- END VOTE CONTAINER --- */}
+
                   {isAdmin && (
                     <button
                       className="delete-btn"

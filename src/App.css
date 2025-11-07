@@ -252,10 +252,10 @@ h3 {
 
 /* --- Admin Username Glow --- */
 .admin-username {
-  color: #5D3BEE;
-  /* Use the main purple theme color */
-  /* This creates the "glow" effect */
-  text-shadow: 0 0 8px rgba(93, 59, 238, 0.7);
+  color: #C738F9;
+  /* A bright, neon purple */
+  /* Make the glow stronger and match the new color */
+  text-shadow: 0 0 10px rgba(199, 56, 249, 0.8);
 }
 
 /* --- Delete Buttons (Hidden by default) --- */
