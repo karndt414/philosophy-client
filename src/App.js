@@ -177,8 +177,8 @@ function App() {
   // --- Event Handlers ---
 
   const handleVote = async (messageId, voteType) => {
-    // Call the SQL function we created!
-    const { error } = await supabase.rpc('increment_vote', {
+    // Call the NEW SQL function
+    const { error } = await supabase.rpc('cast_vote_once', {
       message_id_in: messageId,
       vote_type: voteType,
     });
