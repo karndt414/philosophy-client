@@ -180,7 +180,7 @@ function App() {
     // Call the SQL function we created!
     const { error } = await supabase.rpc('increment_vote', {
       message_id_in: messageId,
-      vote_type_in: voteType,
+      vote_type: voteType,
     });
 
     if (error) {
