@@ -19,6 +19,7 @@ function App() {
   const [newQuestionTitle, setNewQuestionTitle] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const messagesEndRef = useRef(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // 1. Fetch all questions on component mount
   useEffect(() => {
@@ -118,15 +119,39 @@ function App() {
 
   // 5. MASTER AUTH HOOK
   useEffect(() => {
+
+    // This new helper function checks for admin status
+    const checkAdminStatus = async (user) => {
+      if (user) {
+        // Fetch the user's profile
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single(); // Get just one row
+
+        if (data && data.is_admin) {
+          setIsAdmin(true); // They are an admin!
+        } else {
+          setIsAdmin(false); // Not an admin
+        }
+      } else {
+        // No user, definitely not an admin
+        setIsAdmin(false);
+      }
+    };
+
     // Check if a user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      checkAdminStatus(session?.user); // Check admin status on initial load
     });
 
     // Listen for auth events (Sign In, Sign Out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
+        checkAdminStatus(session?.user); // Re-check admin status on any auth change
       }
     );
 
@@ -339,24 +364,26 @@ function App() {
             Sign Out
           </button>
         </div>
-        <details className="admin-details">
-          <summary>Add Question</summary>
-          <form className="admin-form" onSubmit={handleAddQuestion}>
-            <input
-              type="text"
-              placeholder="New question title"
-              value={newQuestionTitle}
-              onChange={(e) => setNewQuestionTitle(e.target.value)}
-            />
-            <input
-              type="password"
-              placeholder="Admin password"
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
-            />
-            <button type="submit">Add</button>
-          </form>
-        </details>
+        {isAdmin && (
+          <details className="admin-details">
+            <summary>Add Question (Admin)</summary>
+              <form className="admin-form" onSubmit={handleAddQuestion}>
+                <input
+                  type="text"
+                  placeholder="New question title"
+                  value={newQuestionTitle}
+                  onChange={(e) => setNewQuestionTitle(e.target.value)}
+                />
+                <input
+                  type="password"
+                  placeholder="Admin password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                />
+                <button type="submit">Add</button>
+              </form>
+            </details>
+          )}
         <ul>
           {questions.map((q) => (
             <li
@@ -365,15 +392,17 @@ function App() {
               onClick={() => setSelectedQuestion(q)}
             >
               {q.title}
-              <button
-                className="delete-btn"
-                onClick={(e) => {
-                  e.stopPropagation(); // Stop it from selecting the question
-                  handleDeleteQuestion(q.id);
-                }}
-              >
-                &times;
-              </button>
+              {isAdmin && (
+                <button
+                  className="delete-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteQuestion(q.id);
+                  }}
+                >
+                  &times;
+                </button>
+              )}
             </li>
           ))}
         </ul>
@@ -389,12 +418,14 @@ function App() {
                   <strong>{msg.username}: </strong>
                   <span>{msg.content}</span>
                   <small>{new Date(msg.created_at).toLocaleTimeString()}</small>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDeleteMessage(msg.id)}
-                  >
-                    &times;
-                  </button>
+                  {isAdmin && (
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDeleteMessage(msg.id)}
+                    >
+                      &times;
+                    </button>
+                  )}
                 </div>
               ))}
               <div ref={messagesEndRef} />
