@@ -504,6 +504,8 @@ h3 {
     border-right: none;
     /* This ensures the sidebar contents (like user info) don't shrink */
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .chat-room {
@@ -535,6 +537,7 @@ h3 {
   /* 3. And when a question IS selected, SHOW the chat room */
   .App.chat-view-active .chat-room {
     display: flex;
+    flex-direction: column;
     /* This makes it visible */
   }
 
