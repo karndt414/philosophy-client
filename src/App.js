@@ -413,7 +413,7 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div className={`App ${selectedQuestion ? 'chat-view-active' : ''}`}>
       <div className="sidebar">
         <h2>Tiger Talks</h2>
         <div className="user-info">
@@ -500,6 +500,12 @@ function App() {
       <div className="chat-room">
         {selectedQuestion ? (
           <>
+            <button
+              className="mobile-back-btn"
+              onClick={() => setSelectedQuestion(null)}
+            >
+              &larr; Back to Questions
+            </button>
             <h2>{selectedQuestion.title}</h2>
             <div className="message-list">
               {messages.map((msg) => (

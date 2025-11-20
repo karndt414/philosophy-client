@@ -664,3 +664,82 @@ h3 {
   font-weight: 600;
   cursor: pointer;
 }
+
+/* --- Mobile Button Style --- */
+/* (This is hidden by default on desktop) */
+.mobile-back-btn {
+  display: none;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #eee;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #5D3BEE;
+  cursor: pointer;
+  padding: 14px 0;
+  margin: 0 10px;
+  /* Give it some spacing */
+}
+
+
+/* --- 📱 MOBILE RESPONSIVE STYLES --- */
+/* This block applies to all screens 768px wide or smaller */
+@media (max-width: 768px) {
+
+  .App {
+    /* On mobile, the app is just one column */
+    flex-direction: column;
+    height: 100vh;
+    /* This is critical: it prevents the keyboard from messing up the layout */
+    height: -webkit-fill-available;
+    overflow: hidden;
+  }
+
+  .sidebar {
+    width: 100%;
+    /* Sidebar takes full width */
+    height: 100%;
+    /* and full height */
+    border-right: none;
+    /* This ensures the sidebar contents (like user info) don't shrink */
+    flex-shrink: 0;
+  }
+
+  .chat-room {
+    width: 100%;
+    height: 100%;
+    flex-shrink: 0;
+    /* This fixes a flexbox bug on mobile */
+    min-height: 0;
+  }
+
+  .placeholder {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  /* --- This is the magic part --- */
+
+  /* 1. By default, HIDE the chat room */
+  .App:not(.chat-view-active) .chat-room {
+    display: none;
+  }
+
+  /* 2. When a question IS selected, HIDE the sidebar */
+  .App.chat-view-active .sidebar {
+    display: none;
+  }
+
+  /* 3. And when a question IS selected, SHOW the chat room */
+  .App.chat-view-active .chat-room {
+    display: flex;
+    /* This makes it visible */
+  }
+
+  /* 4. Finally, show our new Back button */
+  .mobile-back-btn {
+    display: block;
+    /* Makes it visible on mobile */
+  }
+}
