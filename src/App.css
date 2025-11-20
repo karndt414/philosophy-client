@@ -513,13 +513,16 @@ h3 {
   }
 
   .chat-room {
-    width: 100%;
-    height: 100%;
     flex: 1;
-    /* This tells it to fill the screen */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+
+    /* --- ADD THESE TWO LINES --- */
     min-height: 0;
-    /* And this allows it to shrink */
-    flex-shrink: 0;
+    /* Allows this container to shrink */
+    min-width: 0;
+    /* Prevents horizontal overflow bugs */
   }
 
   .placeholder {
