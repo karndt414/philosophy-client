@@ -9,12 +9,16 @@ function AdminPage({ onBack }) {
     const [loading, setLoading] = useState(true);
 
     // 1. Fetch all users from the 'profiles' table on load
+    // 1. Fetch all users from the 'profiles' table on load
     useEffect(() => {
         const fetchUsers = async () => {
             setLoading(true);
+
             // --- THIS IS THE FIX ---
-            // Call our new, secure function instead
-            const { data, error } = await supabase.rpc('get_all_users');
+            // If RLS is disabled, this is the correct query.
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, username, is_admin'); // Get all users
 
             if (error) {
                 console.error('Error fetching users:', error);
