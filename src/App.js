@@ -554,11 +554,11 @@ function App() {
               <div ref={messagesEndRef} />
             </div>
             <form className="message-form" onSubmit={handleSendMessage}>
-              <input
-                type="text"
+              <textarea
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type your thoughts..."
+                rows="3"
               />
               <button type="submit">Send</button>
             </form>
