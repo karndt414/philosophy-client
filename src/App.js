@@ -181,6 +181,16 @@ function App() {
   }, [messages]);
 
   // --- Event Handlers ---
+  // This new handler manages the textarea's state AND its height
+  const handleTextareaChange = (e) => {
+    setNewMessage(e.target.value);
+
+    // --- The Auto-Grow Logic ---
+    // 1. Reset the height to 'auto' to get the correct scrollHeight
+    e.target.style.height = 'auto';
+    // 2. Set the height to match the content's full height
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
 
   const onDragEnd = async (result) => {
     const { destination, source } = result;
@@ -337,8 +347,7 @@ function App() {
     } 
   };
 
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
+  const handleSendMessage = async () => {
     if (newMessage.trim() === '' || !selectedQuestion) return;
 
     // NEW: Get username from the secure session
@@ -559,14 +568,29 @@ function App() {
               ))}
               <div ref={messagesEndRef} />
             </div>
-            <form className="message-form" onSubmit={handleSendMessage}>
+            {/* 1. Remove onSubmit from the form */}
+            <form className="message-form">
               <textarea
                 value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type your thoughts..."
-                rows="1"
+                onChange={handleTextareaChange} // 2. Use our new auto-grow handler
+                placeholder="Type your thoughts... (Shift+Enter to send)"
+
+                // 3. This is the new "Enter" key logic
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.shiftKey) {
+                    // On Shift+Enter, prevent newline and send
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                  // On just "Enter", do default (add a newline)
+                }}
+
+              // 4. Remove rows="3". We'll control this with CSS.
               />
-              <button type="submit">Send</button>
+              {/* 5. Change button to type="button" and use onClick */}
+              <button type="button" onClick={handleSendMessage}>
+                Send
+              </button>
             </form>
           </>
         ) : (
