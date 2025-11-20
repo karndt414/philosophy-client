@@ -38,6 +38,13 @@ h3 {
   display: flex;
   flex-direction: column;
   padding: 24px;
+  height: 100vh;
+}
+
+.sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .sidebar h2 {
