@@ -12,9 +12,9 @@ function AdminPage({ onBack }) {
     useEffect(() => {
         const fetchUsers = async () => {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('id, username, is_admin'); // Get all users
+            // --- THIS IS THE FIX ---
+            // Call our new, secure function instead
+            const { data, error } = await supabase.rpc('get_all_users');
 
             if (error) {
                 console.error('Error fetching users:', error);
