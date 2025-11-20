@@ -569,25 +569,17 @@ function App() {
               <div ref={messagesEndRef} />
             </div>
             {/* 1. Remove onSubmit from the form */}
-            <form className="message-form">
+            {/* 1. Add onSubmit and call e.preventDefault() to STOP all form submissions */}
+            <form className="message-form" onSubmit={(e) => e.preventDefault()}>
               <textarea
                 value={newMessage}
-                onChange={handleTextareaChange} // 2. Use our new auto-grow handler
-                placeholder="Type your thoughts... (Shift+Enter to send)"
+                onChange={handleTextareaChange} // 2. KEEP using our auto-grow handler
+                placeholder="Type your thoughts..."
 
-                // 3. This is the new "Enter" key logic
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.shiftKey) {
-                    // On Shift+Enter, prevent newline and send
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                  // On just "Enter", do default (add a newline)
-                }}
-
-              // 4. Remove rows="3". We'll control this with CSS.
+              // 3. REMOVED the onKeyDown handler. 
+              //    Enter now ONLY makes a newline by default.
               />
-              {/* 5. Change button to type="button" and use onClick */}
+              {/* 4. Make SURE button is type="button" and uses onClick */}
               <button type="button" onClick={handleSendMessage}>
                 Send
               </button>
