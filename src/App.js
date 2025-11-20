@@ -430,7 +430,14 @@ function App() {
                       {msg.username}:
                     </strong>
                     <span>{msg.content}</span>
-                    <small>{new Date(msg.created_at).toLocaleTimeString()}</small>
+                    <small>
+                      {new Date(msg.created_at).toLocaleString('en-US', {
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                    </small>
                   </div>
 
                   {/* --- ADD THIS NEW VOTE CONTAINER --- */}
