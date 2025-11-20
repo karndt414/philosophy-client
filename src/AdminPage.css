@@ -1,0 +1,94 @@
+.admin-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 24px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+}
+
+.admin-header h2 {
+    margin: 0;
+}
+
+.admin-back-btn {
+    background: none;
+    border: 1px solid #ccc;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-back-btn:hover {
+    background: #f4f4f4;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.user-table th,
+.user-table td {
+    border: 1px solid #e0e0e0;
+    padding: 12px;
+    text-align: left;
+}
+
+.user-table th {
+    background-color: #f9f9f9;
+}
+
+.admin-action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-action-btn.make {
+    background-color: #28a745;
+}
+
+.admin-action-btn.make:hover {
+    background-color: #218838;
+}
+
+.admin-action-btn.remove {
+    background-color: #ff4d4d;
+}
+
+.admin-action-btn.remove:hover {
+    background-color: #cc0000;
+}
+
+/* We also need a style for the button in App.css */
+
+/* --- Admin Settings Button --- */
+.admin-settings-btn {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 16px;
+    background-color: #f4f7f6;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.admin-settings-btn:hover {
+    background-color: #e6e0ff;
+}

@@ -6,6 +6,7 @@ import {
   Droppable,
   Draggable,
 } from '@hello-pangea/dnd';
+import AdminPage from './AdminPage';
 import './App.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
   const [newQuestionTitle, setNewQuestionTitle] = useState('');
   const messagesEndRef = useRef(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [view, setView] = useState('chat');
 
   // 1. Fetch questions AND listen for all changes (replaces old #1 and #4)
   useEffect(() => {
@@ -447,6 +449,15 @@ function App() {
               </form>
             </details>
           )}
+
+        {isAdmin && (
+          <button
+            className="admin-settings-btn"
+            onClick={() => setView('admin')}
+          >
+            ⚙️ Admin Settings
+          </button>
+        )}
         {/* --- DRAG-AND-DROP QUESTION LIST --- */}
         <div className="sidebar-list">
           <DragDropContext onDragEnd={onDragEnd}>
@@ -507,89 +518,100 @@ function App() {
       </div>
 
       <div className="chat-room">
-        {selectedQuestion ? (
-          <>
-            <button
-              className="mobile-back-btn"
-              onClick={() => setSelectedQuestion(null)}
-            >
-              &larr; Back to Questions
-            </button>
-            <h2>{selectedQuestion.title}</h2>
-            <div className="message-list">
-              {messages.map((msg) => (
-                <div key={msg.id} className="message">
-                  <div className="message-content">
-                    <strong className={msg.is_admin ? 'admin-username' : ''}>
-                      {msg.username}:
-                    </strong>
-                    <span>{msg.content}</span>
-                    <small>
-                      {new Date(msg.created_at).toLocaleString('en-US', {
-                        month: 'numeric',
-                        day: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      })}
-                    </small>
-                  </div>
 
-                  {/* --- ADD THIS NEW VOTE CONTAINER --- */}
-                  <div className="vote-container">
-                    <button
-                      className={`vote-btn ${(msg.upvoted_by || []).includes(session.user.id) ? 'voted-up' : ''
-                        }`}
-                      onClick={() => handleVote(msg.id, 'up')}
-                    >
-                      ▲
-                    </button>
-                    <span className="vote-count">
-                      {(msg.upvotes || 0) - (msg.downvotes || 0)}
-                    </span>
-                    <button
-                      className={`vote-btn ${(msg.downvoted_by || []).includes(session.user.id) ? 'voted-down' : ''
-                        }`}
-                      onClick={() => handleVote(msg.id, 'down')}
-                    >
-                      ▼
-                    </button>
-                  </div>
-                  {/* --- END VOTE CONTAINER --- */}
+        {/* --- THIS IS THE WRAPPER LOGIC --- */}
+        {view === 'admin' ? (
 
-                  {isAdmin && (
-                    <button
-                      className="delete-btn"
-                      onClick={() => handleDeleteMessage(msg.id)}
-                    >
-                      &times;
-                    </button>
-                  )}
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-            {/* 1. Remove onSubmit from the form */}
-            {/* 1. Add onSubmit and call e.preventDefault() to STOP all form submissions */}
-            <form className="message-form" onSubmit={(e) => e.preventDefault()}>
-              <textarea
-                value={newMessage}
-                onChange={handleTextareaChange} // 2. KEEP using our auto-grow handler
-                placeholder="Type your thoughts..."
+          // 1. If view is 'admin', show the admin page
+          <AdminPage onBack={() => setView('chat')} />
 
-              // 3. REMOVED the onKeyDown handler. 
-              //    Enter now ONLY makes a newline by default.
-              />
-              {/* 4. Make SURE button is type="button" and uses onClick */}
-              <button type="button" onClick={handleSendMessage}>
-                Send
-              </button>
-            </form>
-          </>
         ) : (
-          <div className="placeholder">
-            <h2>Select a question to start chatting</h2>
-          </div>
+
+          // 2. Otherwise, show your normal chat/placeholder
+          // (This is the code you just posted)
+          <>
+            {selectedQuestion ? (
+              <>
+                <button
+                  className="mobile-back-btn"
+                  onClick={() => setSelectedQuestion(null)}
+                >
+                  &larr; Back to Questions
+                </button>
+                <h2>{selectedQuestion.title}</h2>
+                <div className="message-list">
+                  {messages.map((msg) => (
+                    <div key={msg.id} className="message">
+                      <div className="message-content">
+                        <strong className={msg.is_admin ? 'admin-username' : ''}>
+                          {msg.username}:
+                        </strong>
+                        {/* This span will now respect newlines! */}
+                        <span>{msg.content}</span>
+                        <small>
+                          {new Date(msg.created_at).toLocaleString('en-US', {
+                            month: 'numeric',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })}
+                        </small>
+                      </div>
+
+                      <div className="vote-container">
+                        <button
+                          className={`vote-btn ${(msg.upvoted_by || []).includes(session.user.id) ? 'voted-up' : ''
+                            }`}
+                          onClick={() => handleVote(msg.id, 'up')}
+                        >
+                          ▲
+                        </button>
+                        <span className="vote-count">
+                          {(msg.upvotes || 0) - (msg.downvotes || 0)}
+                        </span>
+                        <button
+                          className={`vote-btn ${(msg.downvoted_by || []).includes(session.user.id) ? 'voted-down' : ''
+                            }`}
+                          onClick={() => handleVote(msg.id, 'down')}
+                        >
+                          ▼
+                        </button>
+                      </div>
+
+                      {isAdmin && (
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDeleteMessage(msg.id)}
+                        >
+                          &times;
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Your fixed message form */}
+                <form className="message-form" onSubmit={(e) => e.preventDefault()}>
+                  <textarea
+                    value={newMessage}
+                    onChange={handleTextareaChange}
+                    placeholder="Type your thoughts..."
+                  />
+                  <button type="button" onClick={handleSendMessage}>
+                    Send
+                  </button>
+                </form>
+              </>
+            ) : (
+              <div className="placeholder">
+                <h2>Select a question to start chatting</h2>
+              </div>
+            )}
+          </>
         )}
+        {/* --- END OF WRAPPER LOGIC --- */}
+
       </div>
     </div>
   );

@@ -456,7 +456,7 @@ h3 {
   box-sizing: border-box;
 
   /* --- ADD THESE 3 LINES --- */
-  min-height: 50px;
+  min-height: 25px;
   /* Our new "minimum" height (replaces rows="3") */
   max-height: 200px;
   /* A max height before it starts scrolling */
