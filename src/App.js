@@ -558,7 +558,7 @@ function App() {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type your thoughts..."
-                rows="3"
+                rows="1"
               />
               <button type="submit">Send</button>
             </form>
