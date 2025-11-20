@@ -1,6 +1,11 @@
 // src/App.js
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from './supabaseClient'; // Import your client
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+} from 'react-beautiful-dnd';
 import './App.css';
 
 function App() {
@@ -20,15 +25,48 @@ function App() {
   const messagesEndRef = useRef(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // 1. Fetch all questions on component mount
+  // 1. Fetch questions AND listen for all changes (replaces old #1 and #4)
   useEffect(() => {
-    async function getQuestions() {
-      const { data, error } = await supabase.from('questions').select('*');
-      if (error) console.error('Error fetching questions:', error);
-      else setQuestions(data);
-    }
-    getQuestions();
-  }, []);
+    // Helper function to fetch and sort questions
+    const fetchQuestions = async () => {
+      const { data, error } = await supabase
+        .from('questions')
+        .select('*')
+        .order('order_index', { ascending: true }); // Sort by our new column
+
+      if (error) {
+        console.error('Error fetching questions:', error);
+      } else {
+        setQuestions(data);
+      }
+    };
+
+    // Fetch the initial list
+    fetchQuestions();
+
+    // Set up the REAL-TIME listener
+    const channel = supabase
+      .channel('questions_channel') // Using a new channel name
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // 👈 Listen to ALL events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'questions',
+        },
+        (payload) => {
+          // When anything changes, just re-fetch the whole sorted list
+          console.log('Change detected in questions, refetching:', payload);
+          fetchQuestions();
+        }
+      )
+      .subscribe();
+
+    // Cleanup
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []); // Runs only once
 
   // 2. Fetch messages when a question is selected
   useEffect(() => {
@@ -93,38 +131,6 @@ function App() {
 
   }, [selectedQuestion]); // This part stays the same
 
-  // 4. Listen for REAL-TIME new questions (ADD THIS)
-  useEffect(() => {
-    const channel = supabase
-      .channel('all-questions')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // <-- CHANGE 'INSERT' TO '*'
-          schema: 'public',
-          table: 'questions',
-        },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            // Add the new question to our list
-            setQuestions((prevQuestions) => [...prevQuestions, payload.new]);
-          }
-          if (payload.eventType === 'DELETE') {
-            // A question was deleted!
-            setQuestions((prevQuestions) =>
-              prevQuestions.filter((q) => q.id !== payload.old.id)
-            );
-          }
-        }
-      )
-      .subscribe();
-
-    // Cleanup
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []); // Run this only once when the app loads
-
   // 5. MASTER AUTH HOOK
   useEffect(() => {
 
@@ -175,6 +181,44 @@ function App() {
   }, [messages]);
 
   // --- Event Handlers ---
+
+  const onDragEnd = async (result) => {
+    const { destination, source } = result;
+
+    // 1. Check if the drag was valid
+    if (!destination) return;
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    // 2. Create a new, reordered copy of the questions array
+    const newQuestions = Array.from(questions);
+    const [reorderedItem] = newQuestions.splice(source.index, 1);
+    newQuestions.splice(destination.index, 0, reorderedItem);
+
+    // 3. Update the local state immediately for a fast, snappy UI
+    setQuestions(newQuestions);
+
+    // 4. Create the update objects for Supabase
+    // We update the order_index for every question based on its new position
+    const updates = newQuestions.map((question, index) => ({
+      id: question.id,
+      order_index: index, // The new order is just its array index
+    }));
+
+    // 5. Send all updates to the database
+    const { error } = await supabase.from('questions').upsert(updates);
+    if (error) {
+      console.error('Error reordering questions:', error);
+      // If it fails, alert the user and re-fetch to revert
+      alert("Error saving new order. Reverting.");
+      // (The realtime listener you added in step 1 will
+      // automatically re-fetch and fix the list)
+    }
+  };
 
   const handleVote = async (messageId, voteType) => {
     // Call the NEW SQL function
@@ -394,28 +438,63 @@ function App() {
               </form>
             </details>
           )}
-        <ul>
-          {questions.map((q) => (
-            <li
-              key={q.id}
-              className={selectedQuestion?.id === q.id ? 'active' : ''}
-              onClick={() => setSelectedQuestion(q)}
-            >
-              {q.title}
-              {isAdmin && (
-                <button
-                  className="delete-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteQuestion(q.id);
-                  }}
+        {/* --- DRAG-AND-DROP QUESTION LIST --- */}
+        <div className="sidebar-list">
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="questions">
+              {(provided) => (
+                <ul
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="question-list-ul"
                 >
-                  &times;
-                </button>
+                  {questions.map((q, index) => (
+                    <Draggable
+                      key={q.id}
+                      draggableId={q.id.toString()}
+                      index={index}
+                      // THIS IS OUR SECURITY!
+                      // Regular users can't drag, only admins.
+                      isDragDisabled={!isAdmin}
+                    >
+                      {(provided, snapshot) => (
+                        <li
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps} // This is the "handle"
+                          onClick={() => setSelectedQuestion(q)}
+                          className={`
+                            question-item
+                            ${selectedQuestion?.id === q.id ? 'active' : ''}
+                            ${snapshot.isDragging ? 'dragging' : ''}
+                          `}
+                          style={{
+                            ...provided.draggableProps.style,
+                          }}
+                        >
+                          {q.title}
+                          {isAdmin && (
+                            <button
+                              className="delete-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteQuestion(q.id);
+                              }}
+                            >
+                              &times;
+                            </button>
+                          )}
+                        </li>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder} {/* Makes space while dragging */}
+                </ul>
               )}
-            </li>
-          ))}
-        </ul>
+            </Droppable>
+          </DragDropContext>
+        </div>
+        {/* --- END DRAG-AND-DROP LIST --- */}
       </div>
 
       <div className="chat-room">

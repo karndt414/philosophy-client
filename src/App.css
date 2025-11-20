@@ -554,3 +554,62 @@ h3 {
   color: #ff4d4d;
   /* Highlight color for downvote */
 }
+
+/* --- Drag-and-Drop Styles --- */
+.question-list-ul {
+  /* Remove default list styling */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* We need to rename your 'li' styles to 'question-item' */
+.question-item {
+  padding: 14px 18px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* This is the class we added in the JSX for when an item is being dragged */
+.question-item.dragging {
+  background-color: #e6e0ff !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Make sure the cursor looks right for admins */
+.question-item:not([style*="cursor: default"]) {
+  cursor: grab !important;
+}
+
+.question-item:active:not([style*="cursor: default"]) {
+  cursor: grabbing !important;
+}
+
+/* Style your 'active' class */
+.question-item.active {
+  background-color: #5D3BEE;
+  color: white;
+  border-bottom: 1px solid #5D3BEE;
+}
+
+/* Hide the delete button by default */
+.question-item .delete-btn {
+  visibility: hidden;
+  opacity: 0;
+}
+
+/* Show delete btn on hover or when active */
+.question-item:hover .delete-btn,
+.question-item.active .delete-btn {
+  visibility: visible;
+  opacity: 1;
+}
+
+.question-item.active .delete-btn {
+  background-color: #4a2cb6;
+}
