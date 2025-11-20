@@ -92,6 +92,10 @@ h3 {
   min-height: 0;
 }
 
+.message-content span {
+  white-space: pre-wrap;
+}
+
 /* NOTE: The .message styles are defined below in the Vote Styles */
 
 .message strong {
